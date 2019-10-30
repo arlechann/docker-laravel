@@ -1,0 +1,11 @@
+version: "3.3"
+services:
+    laravel:
+        image: laravel:latest
+        volumes:
+            - .:/var/www
+
+    nginx:
+        image: nginx-php:latest
+        ports:
+            - 80:80

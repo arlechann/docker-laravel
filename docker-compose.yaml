@@ -1,11 +1,15 @@
 version: "3.3"
 services:
-    laravel:
-        image: laravel:latest
-        volumes:
-            - .:/var/www
+  php-composer:
+    build:
+      context: ./docker/composer
+    image: composer:latest
+    volumes:
+      - .:/var/www
 
-    nginx:
-        image: nginx-php:latest
-        ports:
-            - 80:80
+  nginx:
+    build:
+      context: ./docker/nginx
+    image: nginx-php:latest
+    ports:
+      - 80:80

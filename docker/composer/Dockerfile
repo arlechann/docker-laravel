@@ -1,18 +1,29 @@
-FROM php_dev:latest
+FROM php:fpm
 
+# php
 WORKDIR /
-RUN apt update && \
-	apt clean && \
-	php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-	php -r "if (hash_file('sha384', 'composer-setup.php') === 'a5c698ffe4b8e849a443b120cd5ba38043260d5c4023dbf93e1558871f1f07f58274fc6f4c93bcfd858c6bd0775cd8d1') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
-	php composer-setup.php --install-dir=/usr/bin --filename=composer && \
-	php -r "unlink('composer-setup.php');"
+RUN apt-get update && apt-get upgrade -y && \
+	apt-get install -y  unzip libzip-dev libpng-dev libicu-dev libonig-dev && \
+	apt-get clean && \
+	docker-php-ext-install -j$(nproc) zip iconv intl mbstring pdo_mysql opcache gd && \
+	pecl install xdebug && \
+	docker-php-ext-enable xdebug && \
+	apt-get update && \
+	apt-get clean
 
-WORKDIR /develop
+COPY php.ini /usr/local/etc/php/conf.d
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
+#COPY .. /var/www
+EXPOSE 9000
+
+# composer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /composer
 ENV PATH /composer/vendor/bin:$PATH
 
-CMD ["composer"]
+WORKDIR /var/www/public
+
+CMD ["php-fpm"]
 
